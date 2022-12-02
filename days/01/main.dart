@@ -1,9 +1,9 @@
-import '../../shared/elf.dart';
 import '../../shared/utils.dart';
+import 'elf.dart';
 
 void main(List<String> args) async {
   final input = await readInputFile("1-1.txt");
-  final elfs = createElfList(input);
+  final elfs = _createElfList(input);
   print("There are ${elfs.length} elfs.");
   elfs.sort((a, b) => b.totalCalories.compareTo(a.totalCalories));
 
@@ -28,4 +28,25 @@ void partTwo(Iterable<Elf> sortedElfs, int takeTop) {
         "Elf: ${elf.id}; Snacks: ${elf.snacks.length} with total calories: ${elf.totalCalories}");
   }
   print("with a total of ${totalCalories}");
+}
+
+List<Elf> _createElfList(Iterable<String> input) {
+  final List<Elf> list = List.empty(growable: true);
+
+  Elf elf = Elf(id: 0);
+  for (final line in input) {
+    if (line.isEmpty) {
+      list.add(elf);
+      elf = Elf(id: elf.id + 1);
+    } else {
+      try {
+        final calories = int.parse(line);
+        elf.snacks.add(calories);
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
+
+  return list;
 }

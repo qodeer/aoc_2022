@@ -1,21 +1,45 @@
 import '../../shared/utils.dart';
+import 'game.dart';
+import 'game_input.dart';
+import 'game_reusult.dart';
 
 void main(List<String> args) async {
   final input = await readInputFile("2-1.txt");
-  final lineScores = getLineScores(input);
 
-  partOne(lineScores);
+  partOne(input);
+  partTwo(input);
 }
 
-void partOne(Iterable<int> lineScores) {
-  final totalScore =
-      lineScores.fold(0, (previousValue, element) => previousValue + element);
+void partOne(Iterable<String> input) {
+  final games = _getPartOneGames(input);
+  final totalScore = _getTotalScore(games);
 
-  print("The total score is: ${totalScore}");
+  print("P1: The total score is: ${totalScore}");
 }
 
-Iterable<int> getLineScores(Iterable<String> input) {
-  final List<int> lineScores = List.empty(growable: true);
+void partTwo(Iterable<String> input) {
+  final games = _getPartTwoGames(input);
+  final totalScore = _getTotalScore(games);
+
+  print("P2: The total score is: ${totalScore}");
+}
+
+int _getTotalScore(Iterable<Game> gameResult) {
+  return gameResult.fold(
+      0, (previousValue, element) => previousValue + element.gameResult);
+}
+
+Iterable<Game> _getPartOneGames(Iterable<String> input) {
+  Map<String, GameInput> _inputTranslation = <String, GameInput>{
+    "A": GameInput.Rock,
+    "B": GameInput.Paper,
+    "C": GameInput.Scissors,
+    "X": GameInput.Rock,
+    "Y": GameInput.Paper,
+    "Z": GameInput.Scissors
+  };
+
+  final List<Game> games = List.empty(growable: true);
 
   for (final line in input) {
     final splittedInput = line.split(" ");
@@ -25,58 +49,59 @@ Iterable<int> getLineScores(Iterable<String> input) {
       if (opponent == null || me == null) {
         throw new Exception("Input is null; Opponent: ${opponent}, Me: ${me}");
       }
-      final score = calculateScore(opponent, me);
-      lineScores.add(score);
+      final game = new Game(opponent: opponent, me: me);
+      games.add(game);
     } catch (e) {
       print("Could not handle line: ${line}");
     }
   }
 
-  return lineScores;
+  return games;
 }
 
-Map<String, GameInput> _inputTranslation = <String, GameInput>{
-  "A": GameInput.Rock,
-  "B": GameInput.Paper,
-  "C": GameInput.Scissors,
-  "X": GameInput.Rock,
-  "Y": GameInput.Paper,
-  "Z": GameInput.Scissors
-};
+Iterable<Game> _getPartTwoGames(Iterable<String> input) {
+  Map<String, GameInput> _inputTranslation = <String, GameInput>{
+    "A": GameInput.Rock,
+    "B": GameInput.Paper,
+    "C": GameInput.Scissors,
+  };
 
-enum GameInput { Rock, Paper, Scissors }
+  Map<String, GameResult> _resultTranslation = <String, GameResult>{
+    "X": GameResult.Lose,
+    "Y": GameResult.Draw,
+    "Z": GameResult.Win,
+  };
 
-Map<GameInput, int> _shapeScore = {
-  GameInput.Rock: 1,
-  GameInput.Paper: 2,
-  GameInput.Scissors: 3
-};
+  final List<Game> games = List.empty(growable: true);
 
-int calculateScore(GameInput opponent, GameInput me) {
-  int score = _shapeScore[me] ?? 0;
-
-  if (opponent == me) {
-    // Draw
-    score += 3;
-  } else if (me == GameInput.Rock && opponent == GameInput.Scissors) {
-    score += 6;
-  } else if (me == GameInput.Scissors && opponent == GameInput.Paper) {
-    score += 6;
-  } else if (me == GameInput.Paper && opponent == GameInput.Rock) {
-    score += 6;
+  for (final line in input) {
+    final splittedInput = line.split(" ");
+    try {
+      final opponent = _inputTranslation[splittedInput[0]];
+      final epxectedResult = _resultTranslation[splittedInput[1]];
+      if (opponent == null || epxectedResult == null) {
+        throw new Exception(
+            "Input is null; Opponent: ${opponent}, expectedResult: ${epxectedResult}");
+      }
+      final me = _getExpectedGameInput(opponent, epxectedResult);
+      final game = new Game(opponent: opponent, me: me);
+      games.add(game);
+    } catch (e) {
+      print("Could not handle line: ${line}");
+    }
   }
 
-  return score;
+  return games;
 }
 
-
-// Shape: 
-// A, X Rock 1 
-// B, Y Paper 2
-// Z, Z Sciscor 3 
-
-// Outcome
-// Win 6
-// Draw 3
-// Lose 0 
-
+GameInput _getExpectedGameInput(GameInput input, GameResult result) {
+  if (result == GameResult.Draw) {
+    return input;
+  } else if (input == GameInput.Rock) {
+    return result == GameResult.Win ? GameInput.Paper : GameInput.Scissors;
+  } else if (input == GameInput.Paper) {
+    return result == GameResult.Win ? GameInput.Scissors : GameInput.Rock;
+  } else {
+    return result == GameResult.Win ? GameInput.Rock : GameInput.Paper;
+  }
+}
