@@ -1,23 +1,34 @@
 import '../../shared/utils.dart';
+import 'group.dart';
 import 'rucksack.dart';
 
 void main(List<String> args) async {
   final input = await readInputFile("3-1.txt");
-  partOne(input);
+  var rucksacks = input.map((e) => Rucksack(supplies: e)).toList();
+
+  partOne(rucksacks);
+  partTwo(rucksacks);
 }
 
-void partOne(Iterable<String> input) {
+void partOne(List<Rucksack> input) {
   final characterValues = _getCharacterValue();
-  int totalPriority = 0;
-  for (final line in input) {
-    final rucksack = Rucksack(supplies: line);
-    final priority = characterValues.indexOf(rucksack.duplicateItems.first);
-    totalPriority += priority;
+  final totalPriority = input.fold(
+      0,
+      (previousValue, element) =>
+          previousValue +
+          characterValues.indexOf(element.duplicateItems.first));
 
-    print(
-        "${rucksack.compartmentA}-${rucksack.compartmentB}: ${rucksack.duplicateItems} - ${priority}");
-  }
-  print("Total priority is ${totalPriority}");
+  print("P1: Total priority is ${totalPriority}");
+}
+
+void partTwo(List<Rucksack> rucksacks) {
+  final characterValues = _getCharacterValue();
+  final groups = chunkList(rucksacks, 3).map((e) => Group(e));
+  final totalPriority = groups.fold(
+      0,
+      (previousValue, element) =>
+          previousValue + characterValues.indexOf(element.badge));
+  print("P2: Total priority is ${totalPriority}");
 }
 
 List<String> _getCharacterValue() {

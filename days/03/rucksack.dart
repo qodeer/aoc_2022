@@ -3,6 +3,8 @@
 class Rucksack {
   final String supplies;
 
+  Iterable<String> get items => supplies.split("");
+
   String get compartmentA =>
       supplies.substring(0, (supplies.length / 2).ceil());
 
