@@ -5,6 +5,7 @@ void main(List<String> args) async {
   final input = await readInputFile("4-1.txt");
   final pairs = _createPairs(input);
   partOne(pairs);
+  partTwo(pairs);
 }
 
 void partOne(List<Pair> pairs) {
@@ -14,7 +15,15 @@ void partOne(List<Pair> pairs) {
           element.sectionACoversB || element.sectionBCoversA
               ? previousValue + 1
               : previousValue);
-  print("There are ${fullyOverlap} sections that overlap.");
+  print("P1: There are ${fullyOverlap} sections that fully overlap.");
+}
+
+void partTwo(List<Pair> pairs) {
+  final hasOverlap = pairs.fold(
+      0,
+      (previousValue, element) =>
+          element.hasOverlap ? previousValue + 1 : previousValue);
+  print("P2: There are ${hasOverlap} sections that overlap.");
 }
 
 List<Pair> _createPairs(Iterable<String> input) {
